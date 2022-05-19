@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: micro-deploy
+  labels:
+    app: micro
+spec: 
+  containers:
+    - name: micro-service
+      image: stratokumulus/simple-microservice:1.0.4

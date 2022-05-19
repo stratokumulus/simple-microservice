@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: micro-deploy
+  labels: 
+    app: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: micro
+  template: 
+    metadata:
+      name: micro-deploy
+      labels:
+        app: micro
+    spec: 
+      containers:
+        - name: micro-service
+          image: stratokumulus/simple-microservice:1.0.4
+          ports:
+            - containerPort: 9876
+          envFrom:
+          - configMapRef:
+              name: simple-map
+
