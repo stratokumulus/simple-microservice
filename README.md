@@ -4,5 +4,5 @@ The application is really simple : one Python app, one redis server, every time 
 
 App listens on port 9876. 
 
-![Architecture](https://github.com/stratokumulus/simple-microservice/simple-microservice.png)
+![Architecture](https://github.com/stratokumulus/simple-microservice/blob/main/simple-microservice.png)
 
