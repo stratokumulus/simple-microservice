@@ -24,4 +24,9 @@ spec:
           envFrom:
           - configMapRef:
               name: simple-map
+      volumes:
+        - name: micro-secret
+          secret:
+            secretName: DB_PASSWD
+
 
