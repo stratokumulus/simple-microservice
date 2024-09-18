@@ -6,7 +6,7 @@ app = Flask(__name__)
 try:
     db_host = os.environ['DB_HOSTNAME']
     db_port = os.environ['DB_PORT']
-    useless_secret = os.environ['DB_PASSWD"]
+    useless_secret = os.environ['DB_PASSWD']
 except:
     print ('Using default Redis configuration')
     db_host = 'redis-svc'
