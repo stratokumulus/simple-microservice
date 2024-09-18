@@ -4,7 +4,10 @@ import os, time, json
 
 app = Flask(__name__)
 try:
-    db_host = os.environ['DB_HOSTNAME']
+    # Uncomment if using standard Kubernetes
+    # db_host = os.environ['DB_HOSTNAME']
+    # Uncomment if using Azure Container Apps
+    db_host = "redisapp.example.com" #"redisapp.internal.{}".format(os.environ['CONTAINER_APP_ENV_DNS_SUFFIX'])
     db_port = os.environ['DB_PORT']
     useless_secret = os.environ['DB_PASSWD']
 except:
