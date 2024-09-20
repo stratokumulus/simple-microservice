@@ -8,3 +8,9 @@ Tip: my K3s supports klipper-lb by default, so a service type LoadBalancer works
 
 ![Architecture](https://github.com/stratokumulus/simple-microservice/blob/main/simple-microservice.png)
 
+To build the code :
+
+```bash
+docker build --platform linux/amd64 -t <name>/<container-name>:<tag> .
+docker push <name>/<container-name>:<tag>
+```

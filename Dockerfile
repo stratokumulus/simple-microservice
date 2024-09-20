@@ -1,6 +1,3 @@
-# docker build --platform linux/amd64 -t <name>/<container-name>:<tag> .
-# docker login 
-# docker push <name>/<container-name>:<tag>
 FROM python:3.8
 
 ADD . /code
@@ -13,4 +10,3 @@ RUN apt-get -y install iputils-ping
 RUN apt-get -y install dnsutils
 
 CMD ["python","micro.py"]
-
