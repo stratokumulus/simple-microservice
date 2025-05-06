@@ -3,30 +3,28 @@ kind: Deployment
 metadata:
   name: micro-deploy
   #namespace: owner1
-  labels: 
+  labels:
     app: micro
 spec:
   replicas: 1
   selector:
-    matchLabels: 
+    matchLabels:
       app: micro
-  template: 
+  template:
     metadata:
       name: micro-deploy
       labels:
         app: micro
-    spec: 
+    spec:
       containers:
         - name: micro-service
-          image: stratokumulus/simple-microservice:1.0.4
+          image: stratokumulus/simple-microservice:51
           ports:
             - containerPort: 9876
           envFrom:
-          - configMapRef:
-              name: simple-map
+            - configMapRef:
+                name: simple-map
       volumes:
         - name: micro-secret
           secret:
             secretName: DB_PASSWD
-
-

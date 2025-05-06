@@ -1,8 +1,8 @@
-FROM python:3.8
+FROM python:3.10
 
 ADD . /code
 WORKDIR /code
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 # The following is only used to create myself a cozy debugging env. Not needed for usual stuff ... !
 RUN apt-get update
 RUN apt-get install busybox
