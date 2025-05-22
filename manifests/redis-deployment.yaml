@@ -16,7 +16,6 @@ spec:
       labels:
         app: redis
     spec:
-      restartPolicy: OnFailure
       containers:
         - name: redis
           image: redis

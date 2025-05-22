@@ -16,7 +16,6 @@ spec:
       labels:
         app: micro
     spec:
-      restartPolicy: OnFailure
       containers:
         - name: micro-service
           image: stratokumulus/simple-microservice:latest
