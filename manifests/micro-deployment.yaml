@@ -7,7 +7,7 @@ metadata:
     app: micro
 spec:
   strategy:
-    type: Replace
+    type: Recreate
     # rollingUpdate:
     #   maxUnavailable: 20%
     #   maxSurge: 20%
