@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: micro-service
-          image: stratokumulus/simple-microservice:latest
+          image: stratokumulus/simple-microservice:53
           ports:
             - containerPort: 9876
           envFrom:
