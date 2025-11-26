@@ -6,6 +6,11 @@ metadata:
   labels:
     app: micro
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 20%
+      maxSurge: 20%
   replicas: 3
   selector:
     matchLabels:
@@ -18,7 +23,7 @@ spec:
     spec:
       containers:
         - name: micro-service
-          image: stratokumulus/simple-microservice:latest
+          image: stratokumulus/simple-microservice:53
           ports:
             - containerPort: 9876
           envFrom:
