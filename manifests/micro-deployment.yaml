@@ -7,10 +7,10 @@ metadata:
     app: micro
 spec:
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 20%
-      maxSurge: 20%
+    type: Replace
+    # rollingUpdate:
+    #   maxUnavailable: 20%
+    #   maxSurge: 20%
   replicas: 3
   selector:
     matchLabels:
