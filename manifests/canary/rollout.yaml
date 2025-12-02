@@ -93,12 +93,12 @@ spec:
           env:
             - name: DB_HOSTNAME
               valueFrom:
-                simple-mapMapKeyRef:
+                configMapKeyRef:
                   name: simple-map
                   key: DB_HOSTNAME
             - name: DB_PORT
               valueFrom:
-                simple-mapMapKeyRef:
+                configMapKeyRef:
                   name: simple-map
                   key: DB_PORT
             - name: DB_PASSWD
