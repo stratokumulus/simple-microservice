@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: micro-svc
+  labels:
+    app: micro
+    strategy: canary
+  annotations:
+    description: "Stable service - traffic automatically split between stable and canary pods"
+spec:
+  type: LoadBalancer
+  selector:
+    app: micro
+    # Argo Rollouts manages which pods receive traffic based on canary weight
+  ports:
+  - port: 9876
+    targetPort: 9876
+    protocol: TCP
+    name: http
+  sessionAffinity: None

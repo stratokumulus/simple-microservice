@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: micro-deployment
+  labels:
+    app: micro
+    strategy: rolling-update
+    version: v1.0.0
+spec:
+  # Use 3 replicas to better demonstrate rolling updates
+  replicas: 3
+
+  # Rolling update strategy configuration
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Maximum number of pods that can be created over the desired replicas
+      maxSurge: 1
+      # Maximum number of pods that can be unavailable during update
+      # Setting to 0 ensures zero-downtime deployments
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: micro
+
+  template:
+    metadata:
+      labels:
+        app: micro
+        version: v1.0.0
+      annotations:
+        # These annotations help ArgoCD track and display deployment info
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9876"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: micro
+        # Using versioned image instead of :latest for better control
+        # For demo purposes, you can push different versions: v1.0.0, v2.0.0, etc.
+        image: stratokumulus/simple-microservice:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 9876
+          name: http
+          protocol: TCP
+
+        # Environment variables from ConfigMap
+        env:
+        - name: DB_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_HOSTNAME
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_PORT
+        - name: DB_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: micro-secrets
+              key: DB_PASSWD
+
+        # Resource management - important for stable deployments
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        # Liveness probe - checks if container is alive
+        # If fails, Kubernetes will restart the container
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Readiness probe - checks if container is ready to serve traffic
+        # If fails, pod is removed from service endpoints
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3

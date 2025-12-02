@@ -1,0 +1,106 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: micro-rollout
+  labels:
+    app: micro
+    strategy: blue-green
+spec:
+  # Number of replicas for the deployment
+  replicas: 3
+
+  # Rollout strategy: Blue-Green
+  strategy:
+    blueGreen:
+      # Name of the service that points to the active (production) version
+      activeService: micro-svc-active
+
+      # Name of the service that points to the preview (new) version
+      # This allows testing the new version before promoting
+      previewService: micro-svc-preview
+
+      # Automatically promote after specified time (disabled for manual demo)
+      # autoPromotionEnabled: false
+
+      # Time to wait before automatically promoting (if autoPromotionEnabled: true)
+      # autoPromotionSeconds: 30
+
+      # Time to keep old version (blue) after promoting new version (green)
+      # Useful for quick rollback if issues discovered
+      scaleDownDelaySeconds: 30
+
+      # Number of old ReplicaSets to retain for rollback
+      scaleDownDelayRevisionLimit: 1
+
+  # How many old ReplicaSets to keep for rollback
+  revisionHistoryLimit: 3
+
+  selector:
+    matchLabels:
+      app: micro
+
+  template:
+    metadata:
+      labels:
+        app: micro
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9876"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: micro
+        image: stratokumulus/simple-microservice:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 9876
+          name: http
+          protocol: TCP
+
+        env:
+        - name: DB_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_HOSTNAME
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_PORT
+        - name: DB_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: micro-secrets
+              key: DB_PASSWD
+        # Add environment variable to identify which version is running
+        - name: APP_VERSION
+          value: "v1.0.0"
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3

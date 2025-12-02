@@ -1,0 +1,168 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: micro-success-rate
+  labels:
+    app: micro
+    strategy: canary
+spec:
+  # Arguments passed from the Rollout
+  args:
+  - name: service-name
+    description: "Name of the service to monitor"
+
+  # Define metrics to measure during canary analysis
+  metrics:
+  # Metric 1: Success rate from Prometheus
+  - name: success-rate
+    # How often to measure the metric
+    interval: 30s
+    # Number of measurements before considering it successful
+    count: 3
+    # Allow up to 1 failed measurement before failing the analysis
+    failureLimit: 1
+    # If no data is available, consider it a failure
+    inconclusiveLimit: 1
+
+    provider:
+      prometheus:
+        # Prometheus server address (adjust for your environment)
+        # In a real setup, this would be your Prometheus service
+        address: http://prometheus-server.monitoring.svc.cluster.local:9090
+
+        # Prometheus query to calculate success rate
+        # This is a sample query - adjust based on your actual metrics
+        query: |
+          sum(rate(
+            flask_http_request_duration_seconds_count{
+              service="{{args.service-name}}",
+              status!~"5.."
+            }[2m]
+          )) /
+          sum(rate(
+            flask_http_request_duration_seconds_count{
+              service="{{args.service-name}}"
+            }[2m]
+          )) * 100
+
+        # Success criteria: success rate must be > 95%
+        successCondition: result > 95
+
+  # Metric 2: Error rate check
+  - name: error-rate
+    interval: 30s
+    count: 3
+    failureLimit: 1
+
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc.cluster.local:9090
+
+        # Query to check error rate
+        query: |
+          sum(rate(
+            flask_http_request_exceptions_total{
+              service="{{args.service-name}}"
+            }[2m]
+          ))
+
+        # Success criteria: error rate must be < 0.05 (5 errors per second)
+        successCondition: result < 0.05
+
+  # Metric 3: Simple pod health check (doesn't require Prometheus)
+  - name: pod-health
+    interval: 20s
+    count: 3
+    failureLimit: 1
+
+    provider:
+      # Using Kubernetes Job to check pod health
+      job:
+        metadata:
+          labels:
+            app: micro-health-check
+        spec:
+          template:
+            spec:
+              containers:
+              - name: health-check
+                image: curlimages/curl:latest
+                command:
+                - sh
+                - -c
+                - |
+                  # Simple health check - verify service responds
+                  response=$(curl -s -o /dev/null -w "%{http_code}" http://{{args.service-name}}:9876/metrics)
+                  if [ "$response" = "200" ]; then
+                    echo "Health check passed: $response"
+                    exit 0
+                  else
+                    echo "Health check failed: $response"
+                    exit 1
+                  fi
+              restartPolicy: Never
+          backoffLimit: 1
+---
+# Alternative simpler AnalysisTemplate without Prometheus
+# Use this if Prometheus is not available in your environment
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: micro-success-rate-simple
+  labels:
+    app: micro
+    strategy: canary
+    variant: simple
+spec:
+  args:
+  - name: service-name
+
+  metrics:
+  # Simple HTTP success check
+  - name: http-success
+    interval: 15s
+    count: 5
+    failureLimit: 2
+
+    provider:
+      job:
+        metadata:
+          labels:
+            app: micro-analysis
+        spec:
+          template:
+            spec:
+              containers:
+              - name: test
+                image: curlimages/curl:latest
+                command:
+                - sh
+                - -c
+                - |
+                  echo "Testing service: {{args.service-name}}"
+
+                  # Make 10 requests and count successes
+                  success=0
+                  total=10
+
+                  for i in $(seq 1 $total); do
+                    response=$(curl -s -o /dev/null -w "%{http_code}" http://{{args.service-name}}:9876/)
+                    if [ "$response" = "200" ]; then
+                      success=$((success + 1))
+                    fi
+                    sleep 0.5
+                  done
+
+                  success_rate=$((success * 100 / total))
+                  echo "Success rate: $success_rate% ($success/$total)"
+
+                  # Require at least 80% success rate
+                  if [ $success_rate -ge 80 ]; then
+                    echo "Analysis passed"
+                    exit 0
+                  else
+                    echo "Analysis failed"
+                    exit 1
+                  fi
+              restartPolicy: Never
+          backoffLimit: 1

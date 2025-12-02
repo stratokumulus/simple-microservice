@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: micro-svc
+  labels:
+    app: micro
+    strategy: recreate
+  annotations:
+    description: "Service for recreate strategy - will have no endpoints during deployment"
+spec:
+  type: LoadBalancer
+  selector:
+    app: micro
+  ports:
+  - port: 9876
+    targetPort: 9876
+    protocol: TCP
+    name: http
+  sessionAffinity: None

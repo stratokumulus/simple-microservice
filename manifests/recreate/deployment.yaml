@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: micro-deployment
+  labels:
+    app: micro
+    strategy: recreate
+    version: v1.0.0
+spec:
+  # Using 1 replica for clear demonstration of downtime
+  # With recreate strategy, all pods are terminated before new ones start
+  replicas: 1
+
+  # Recreate strategy: Terminate ALL old pods before creating new ones
+  # WARNING: This causes downtime!
+  strategy:
+    type: Recreate
+    # No additional configuration needed for Recreate strategy
+    # When update is triggered:
+    # 1. All existing pods are terminated
+    # 2. Wait for all pods to fully terminate
+    # 3. Create new pods with updated configuration
+    # 4. Service is unavailable during steps 1-3
+
+  selector:
+    matchLabels:
+      app: micro
+
+  template:
+    metadata:
+      labels:
+        app: micro
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9876"
+        prometheus.io/path: "/metrics"
+        # Annotation to help identify recreate deployments
+        deployment.kubernetes.io/strategy: "recreate"
+    spec:
+      containers:
+      - name: micro
+        image: stratokumulus/simple-microservice:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 9876
+          name: http
+          protocol: TCP
+
+        env:
+        - name: DB_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_HOSTNAME
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: micro-configmap
+              key: DB_PORT
+        - name: DB_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: micro-secrets
+              key: DB_PASSWD
+        - name: APP_VERSION
+          value: "v1.0.0"
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        # Health probes still important for startup verification
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9876
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Lifecycle hooks can be useful with Recreate strategy
+        lifecycle:
+          # PreStop hook: Gives app time to finish requests before termination
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - sleep 5
+
+      # Grace period for pod termination
+      # Gives application time to shut down gracefully
+      terminationGracePeriodSeconds: 30
