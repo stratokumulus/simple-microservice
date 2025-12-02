@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
         - name: micro
-          image: stratokumulus/simple-microservice:53
+          image: stratokumulus/simple-microservice:latest
           imagePullPolicy: Always
 
           ports:
