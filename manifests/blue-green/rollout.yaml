@@ -21,10 +21,10 @@ spec:
       previewService: micro-svc-preview
 
       # Automatically promote after specified time (disabled for manual demo)
-      # autoPromotionEnabled: false
+      autoPromotionEnabled: false
 
       # Time to wait before automatically promoting (if autoPromotionEnabled: true)
-      # autoPromotionSeconds: 30
+      autoPromotionSeconds: 30
 
       # Time to keep old version (blue) after promoting new version (green)
       # Useful for quick rollback if issues discovered
