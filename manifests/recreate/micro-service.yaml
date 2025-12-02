@@ -5,7 +5,9 @@ metadata:
   name: micro-svc
   labels:
     app: micro
-    strategy: rolling-update
+    strategy: recreate
+  annotations:
+    description: "Service for recreate strategy - will have no endpoints during deployment"
 spec:
   type: LoadBalancer
   selector:
@@ -15,6 +17,4 @@ spec:
       targetPort: 9876
       protocol: TCP
       name: http
-  # Session affinity can be useful for stateful apps
-  # For this demo app, it's not required but shown for completeness
   sessionAffinity: None
