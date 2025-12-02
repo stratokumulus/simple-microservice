@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  namesepace: simple
+  namespace: simple
   name: micro-svc
   labels:
     app: micro
