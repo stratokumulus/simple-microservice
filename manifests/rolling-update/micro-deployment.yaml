@@ -54,12 +54,12 @@ spec:
             - name: DB_HOSTNAME
               valueFrom:
                 configMapKeyRef:
-                  name: micro-configmap
+                  name: simple-map
                   key: DB_HOSTNAME
             - name: DB_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: micro-configmap
+                  name: simple-map
                   key: DB_PORT
             - name: DB_PASSWD
               valueFrom:
