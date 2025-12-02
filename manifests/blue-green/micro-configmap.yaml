@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: simple
+  name: simple-map
+  #namespace: owner1
+data:
+  DB_HOSTNAME: "redis-svc.redis-ns"
+  DB_PORT: "6379"
