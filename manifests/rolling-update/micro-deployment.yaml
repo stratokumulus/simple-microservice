@@ -41,7 +41,7 @@ spec:
         - name: micro
           # Using versioned image instead of :latest for better control
           # For demo purposes, you can push different versions: v1.0.0, v2.0.0, etc.
-          image: stratokumulus/simple-microservice:latest
+          image: stratokumulus/simple-microservice:53
           imagePullPolicy: Always
 
           ports:
