@@ -41,7 +41,7 @@ spec:
         - name: micro
           # Using versioned image instead of :latest for better control
           # For demo purposes, you can push different versions: v1.0.0, v2.0.0, etc.
-          image: stratokumulus/simple-microservice:53
+          image: stratokumulus/simple-microservice:latest
           imagePullPolicy: Always
 
           ports:
@@ -64,7 +64,7 @@ spec:
             - name: DB_PASSWD
               valueFrom:
                 secretKeyRef:
-                  name: micro-secrets
+                  name: micro-secret
                   key: DB_PASSWD
 
           # Resource management - important for stable deployments
