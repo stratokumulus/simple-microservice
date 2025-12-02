@@ -1,6 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
+  namespace: simple
   name: micro-rollout
   labels:
     app: micro
@@ -27,31 +28,31 @@ spec:
 
       # Define the steps for progressive canary rollout
       steps:
-      # Step 1: Deploy canary with 20% traffic
-      - setWeight: 20
-      - pause:
-          duration: 30s  # Wait 30 seconds before proceeding
+        # Step 1: Deploy canary with 20% traffic
+        - setWeight: 20
+        - pause:
+            duration: 30s # Wait 30 seconds before proceeding
 
-      # Step 2: If analysis passes, increase to 40%
-      - setWeight: 40
-      - pause:
-          duration: 30s
+        # Step 2: If analysis passes, increase to 40%
+        - setWeight: 40
+        - pause:
+            duration: 30s
 
-      # Step 3: Run analysis before proceeding to majority traffic
-      - setWeight: 60
-      - pause:
-          duration: 30s
-      - analysis:
-          templates:
-          - templateName: micro-success-rate
-          args:
-          - name: service-name
-            value: micro-svc
+        # Step 3: Run analysis before proceeding to majority traffic
+        - setWeight: 60
+        - pause:
+            duration: 30s
+        - analysis:
+            templates:
+              - templateName: micro-success-rate
+            args:
+              - name: service-name
+                value: micro-svc
 
-      # Step 4: Increase to 80% after successful analysis
-      - setWeight: 80
-      - pause:
-          duration: 30s
+        # Step 4: Increase to 80% after successful analysis
+        - setWeight: 80
+        - pause:
+            duration: 30s
 
       # Step 5: Full rollout (100%)
       # If analysis passes and no manual abort, promote to 100%
@@ -71,6 +72,7 @@ spec:
 
   template:
     metadata:
+      namespace: simple
       labels:
         app: micro
       annotations:
@@ -79,57 +81,57 @@ spec:
         prometheus.io/path: "/metrics"
     spec:
       containers:
-      - name: micro
-        image: stratokumulus/simple-microservice:latest
-        imagePullPolicy: Always
+        - name: micro
+          image: stratokumulus/simple-microservice:latest
+          imagePullPolicy: Always
 
-        ports:
-        - containerPort: 9876
-          name: http
-          protocol: TCP
+          ports:
+            - containerPort: 9876
+              name: http
+              protocol: TCP
 
-        env:
-        - name: DB_HOSTNAME
-          valueFrom:
-            configMapKeyRef:
-              name: micro-configmap
-              key: DB_HOSTNAME
-        - name: DB_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: micro-configmap
-              key: DB_PORT
-        - name: DB_PASSWD
-          valueFrom:
-            secretKeyRef:
-              name: micro-secrets
-              key: DB_PASSWD
-        - name: APP_VERSION
-          value: "v1.0.0"
+          env:
+            - name: DB_HOSTNAME
+              valueFrom:
+                simple-mapMapKeyRef:
+                  name: simple-map
+                  key: DB_HOSTNAME
+            - name: DB_PORT
+              valueFrom:
+                simple-mapMapKeyRef:
+                  name: simple-map
+                  key: DB_PORT
+            - name: DB_PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: micro-secret
+                  key: DB_PASSWD
+            - name: APP_VERSION
+              value: "v1.0.0"
 
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
 
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: 9876
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 9876
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-        readinessProbe:
-          httpGet:
-            path: /metrics
-            port: 9876
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9876
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3

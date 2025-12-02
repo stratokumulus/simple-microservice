@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: simple
   name: micro-svc
   labels:
     app: micro
@@ -13,8 +14,8 @@ spec:
     app: micro
     # Argo Rollouts manages which pods receive traffic based on canary weight
   ports:
-  - port: 9876
-    targetPort: 9876
-    protocol: TCP
-    name: http
+    - port: 9876
+      targetPort: 9876
+      protocol: TCP
+      name: http
   sessionAffinity: None
