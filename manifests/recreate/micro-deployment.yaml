@@ -10,7 +10,7 @@ metadata:
 spec:
   # Using 1 replica for clear demonstration of downtime
   # With recreate strategy, all pods are terminated before new ones start
-  replicas: 1
+  replicas: 3
 
   # Recreate strategy: Terminate ALL old pods before creating new ones
   # WARNING: This causes downtime!
