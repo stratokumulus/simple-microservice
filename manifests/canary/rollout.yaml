@@ -42,12 +42,12 @@ spec:
         - setWeight: 60
         - pause:
             duration: 30s
-        - analysis:
-            templates:
-              - templateName: micro-success-rate
-            args:
-              - name: service-name
-                value: micro-svc
+        # - analysis:
+        #     templates:
+        #       - templateName: micro-success-rate
+        #     args:
+        #       - name: service-name
+        #         value: micro-svc
 
         # Step 4: Increase to 80% after successful analysis
         - setWeight: 80
@@ -82,7 +82,7 @@ spec:
     spec:
       containers:
         - name: micro
-          image: stratokumulus/simple-microservice:53
+          image: stratokumulus/simple-microservice:latest
           imagePullPolicy: Always
 
           ports:
